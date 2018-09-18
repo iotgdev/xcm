@@ -11,11 +11,6 @@ from xcm.canonical.xcm_time import ts_dt
 
 
 class XCMRecord(object):
-    """
-    Parents for PVC and ASC allow us to include parents in the XCM record
-    """
-    def __call__(self, *args, **kwargs):
-        return self.as_dict(*args, **kwargs)
 
     @staticmethod
     def as_dict(record, features):

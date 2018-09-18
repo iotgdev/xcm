@@ -11,6 +11,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'future>=0.16.0',
+        'six>=1.11.0',
         'mmh3>=2.3.1',
         'ujson>=1.35',
         'numpy>=1.15.0',

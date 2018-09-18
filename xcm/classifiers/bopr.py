@@ -5,7 +5,12 @@ Bayesian Online Probit Regression is a linear model which supports bayesian beli
 """
 from __future__ import unicode_literals
 
-from itertools import izip
+
+try:
+    from itertools import izip
+except ImportError:  # 2to3
+    izip = zip
+
 from math import sqrt, exp, erf
 
 import numpy

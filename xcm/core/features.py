@@ -17,12 +17,12 @@ logger = logging.getLogger('xcm.features')
 
 
 DEFAULT_FEATURES = ['CoarseURL', 'AppId', 'AnonymousDomainId', 'IsAdInApp', 'IsInStreamVideo', 'IsInterstitial',
-                  'DeviceType', 'SlotVisibility', 'SlotViewability', 'HalfHourIndex', 'WeekDay', 'GeoState',
-                  'GeoCity', 'Browser', 'BrowserVersion', 'OS', 'OSVersion', 'AdHandle', 'AdHeight', 'AdWidth',
-                  'AdvertiserId', 'PageVerticalCategories', 'SmoothTime', 'AdDimensions']
+                    'DeviceType', 'SlotVisibility', 'SlotViewability', 'HalfHourIndex', 'WeekDay', 'GeoState',
+                    'GeoCity', 'Browser', 'BrowserVersion', 'OS', 'OSVersion', 'AdHandle', 'AdHeight', 'AdWidth',
+                    'AdvertiserId', 'PageVerticalCategories', 'SmoothTime', 'AdDimensions']
 
 
-def get_next_version(version):
+def get_next_version(version=None):
     """
     Given a version identifier, increment by a major version and return.
     NB that major versions are also bumped to today, where minor versions are not

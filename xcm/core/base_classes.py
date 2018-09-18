@@ -10,14 +10,14 @@ from __future__ import unicode_literals
 
 import logging
 from abc import ABCMeta, abstractmethod
+from six import with_metaclass
 
 
 logger = logging.getLogger('xcm.base_classes')
 
 
-class XCMReader(object):
+class XCMReader(with_metaclass(ABCMeta, object)):
     """All XCM readers must have these methods"""
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def get_ml_features_dict(self, source_date, **kwargs):
@@ -37,9 +37,8 @@ class XCMReader(object):
         pass
 
 
-class XCMClassifier(object):
+class XCMClassifier(with_metaclass(ABCMeta, object)):
     """All XCM Classifiers must have these methods"""
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def predict(self, prediction_input):
@@ -54,10 +53,8 @@ class XCMClassifier(object):
         pass
 
 
-class XCM(object):
+class XCM(with_metaclass(ABCMeta, object)):
     """All XCM model classes must inherit from this"""
-
-    __metaclass__ = ABCMeta
 
     @property
     def id(self):
@@ -95,10 +92,8 @@ class XCM(object):
         pass
 
 
-class XCMStore(object):
+class XCMStore(with_metaclass(ABCMeta, object)):
     """All stores should have this implementation"""
-
-    __metaclass__ = ABCMeta
 
     @abstractmethod
     def list(self, **kwargs):
