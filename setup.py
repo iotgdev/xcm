@@ -21,6 +21,5 @@ setup(
         'boto3>=1.4.4',
         'pytz>=2014.2',
         's3fs>=0.1.5',
-        'slack-logging>=1.0.0'
     ]
 )
