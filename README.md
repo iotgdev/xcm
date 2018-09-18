@@ -2,6 +2,8 @@
 The cross customer model (XCM) is a machine learning modelling 
 system designed to take features from openrtb auctions and determine the probability of a good behaviour auction from some predetermined definition of good behaviour.
 
+XCM is currently supported for both python2 and python3.
+
 ## Features
 
 XCM is designed to be extendable, there are 4 extendable classes defined in `xcm.core.base_classes`:
