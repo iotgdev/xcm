@@ -1,12 +1,15 @@
 from setuptools import setup, find_packages
 
+VERSION = '1.1.0'
+
 setup(
     name='xcm',
-    version='1.0.0',
+    version=VERSION,
     description='Cross Customer Model machine learning for Realtime Bidding',
     author='iotec',
     author_email='dev@dsp.io',
-    url='https://github.com/iotgdev/packages/xcm/',
+    url='https://github.com/iotgdev/xcm/',
+    download_url='https://github.com/iotgdev/xcm/archive/{}.tar.gz'.format(VERSION),
     packages=find_packages(include=['xcm', 'xcm.*']),
     include_package_data=True,
     install_requires=[
