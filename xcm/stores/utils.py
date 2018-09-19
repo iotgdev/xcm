@@ -25,3 +25,13 @@ def get_training_model_store():
     if _TRAINING_STORE is None:
         _TRAINING_STORE = S3XCMStore('', '', XCMTrainingModel)
     return _TRAINING_STORE
+
+
+def configure_s3_store(store, bucket, prefix):
+    """
+    :type store: S3XCMStore
+    :type bucket: str
+    :type prefix: str
+    """
+    store.s3_bucket = bucket
+    store.s3_prefix = prefix

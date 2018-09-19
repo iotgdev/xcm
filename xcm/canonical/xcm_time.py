@@ -61,7 +61,7 @@ from __future__ import unicode_literals
 
 import datetime
 import time
-
+from six import string_types
 import pytz
 
 XCM_EPOCH = 1367366400.0  # May 2013
@@ -156,7 +156,7 @@ def dt_st(dt):
 
 def ts_xcmh(ts):
     """Converts a timestamp to an XCM hour"""
-    if type(ts) == str or type(ts) == unicode:
+    if isinstance(ts, string_types):
         ts = float(ts)
     if ts > MICROSEC_LIMIT:
         ts /= MICROSEC_FACTOR
@@ -165,14 +165,14 @@ def ts_xcmh(ts):
 
 def xcmh_ts(xcmhour):
     """Converts an XCM hour to a timestamp"""
-    if type(xcmhour) == str or type(xcmhour) == unicode:
+    if isinstance(xcmhour, string_types):
         xcmhour = float(xcmhour)
     return xcmhour * 3600 + XCM_EPOCH
 
 
 def ts_dt(ts):
     """Converts a timestamp to a datetime"""
-    if type(ts) == str or type(ts) == unicode:
+    if isinstance(ts, string_types):
         ts = float(ts)
     if ts > MICROSEC_LIMIT:
         ts /= MICROSEC_FACTOR
@@ -234,7 +234,7 @@ def xcmh_xcmd(xcmh):
     """Converts an XCM hour to an XCM day"""
     if type(xcmh) != int:
         xcmh = int(xcmh)
-    return xcmh / 24
+    return int(xcmh / 24)
 
 
 def xcmd_dt(xcmd):
@@ -355,7 +355,7 @@ def ensure_xcm_day(day):
     if isinstance(day, datetime.date):
         day = datetime.datetime.fromordinal(day.toordinal())
 
-    if isinstance(day, basestring) and '/' in day:
+    if isinstance(day, string_types) and '/' in day:
         xcm_day = ds_xcmd(day)
     elif isinstance(day, datetime.datetime):
         xcm_day = dt_xcmd(day)

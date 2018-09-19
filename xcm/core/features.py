@@ -4,14 +4,15 @@
 Utility functions for XCM model training
 """
 from __future__ import unicode_literals
+
 import datetime
+import logging
 import mmh3
 
-import logging
 import numpy
+from six import iteritems
 
 from xcm.core.records import XCMRecord
-
 
 logger = logging.getLogger('xcm.features')
 
@@ -57,7 +58,7 @@ def get_hashed_features(record, hash_size):
     :rtype: numpy.array
     """
     indices = []
-    for key, value in record.iteritems():
+    for key, value in iteritems(record):
         if isinstance(value, (list, set)):
             indices += [mmh3.hash("%s-%s" % (key, item)) for item in value]
         elif value:

@@ -71,7 +71,7 @@ class XCMRecord(object):
         """
         formatted_ts = int(float(timestamp))
 
-        half_hour_index = (formatted_ts % 86400) / 1800
+        half_hour_index = int((formatted_ts % 86400) / 1800)
         return str(half_hour_index)
 
     @staticmethod
