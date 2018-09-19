@@ -57,9 +57,13 @@ class XCMModel(XCM):
         # noinspection PyProtectedMember
         model_values = data_store._get_dict(self.id, 'MODEL_VALUES')
 
+        print(len(weights))
+
         weights = np.ndarray(shape=(len(weights) // 4,), dtype='<f4', buffer=weights)  # len(buffer)=4e6, len(shape)=1e6
-        variances = np.ndarray(shape=(len(weights) // 4,), dtype='<f4', buffer=variances)
+        variances = np.ndarray(shape=(len(variances) // 4,), dtype='<f4', buffer=variances)
         beta = model_values['beta']
+
+        print((len(weights), len(variances), beta))
 
         self.classifier = BOPRClassifier(weights, variances, beta)
 
