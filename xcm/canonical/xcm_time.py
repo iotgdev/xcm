@@ -271,7 +271,7 @@ def xcmd_xcmw(xcmd):
     """
     if type(xcmd) != int:
         xcmd = int(xcmd)
-    return (xcmd + 2) / 7
+    return int((xcmd + 2) / 7)
 
 
 def xcmw_dt(xcmw):

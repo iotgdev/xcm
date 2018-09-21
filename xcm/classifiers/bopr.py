@@ -117,7 +117,7 @@ class BOPRClassifier(XCMClassifier):
         0 for no reset and 1 for a full reset
         """
         if not (0 <= eps <= 1):
-            return
+            raise RuntimeError('Invalid forget quantity, must be between 0 and 1')
 
         noisy_variance = numpy.multiply(self.variance, self.initial_variance) / (
             (1 - eps) * self.initial_variance + eps * self.variance)

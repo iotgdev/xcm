@@ -24,7 +24,8 @@ def roc_curve(labels, scores):  # todo: remove from XCM
     :rtype: tuple(np.array, np.array, np.array)
     """
     if len(scores.shape) != 1:
-        raise Exception('Wrong shape for predicted scores array %s' % scores.shape)
+        raise ValueError('Wrong shape for predicted scores array {}'.format(scores.shape))
+
     sorted_indices = np.argsort(scores)
 
     scores = np.array(scores)[sorted_indices]

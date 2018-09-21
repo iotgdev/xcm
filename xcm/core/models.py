@@ -57,13 +57,9 @@ class XCMModel(XCM):
         # noinspection PyProtectedMember
         model_values = data_store._get_dict(self.id, 'MODEL_VALUES')
 
-        print(len(weights))
-
         weights = np.ndarray(shape=(len(weights) // 4,), dtype='<f4', buffer=weights)  # len(buffer)=4e6, len(shape)=1e6
         variances = np.ndarray(shape=(len(variances) // 4,), dtype='<f4', buffer=variances)
         beta = model_values['beta']
-
-        print((len(weights), len(variances), beta))
 
         self.classifier = BOPRClassifier(weights, variances, beta)
 
@@ -78,7 +74,7 @@ class XCMModel(XCM):
         :type data_store: xcm.stores.s3.S3XCMStore
         """
         n_weights = len(self.classifier.weights)
-        n_variances = len(self.classifier.weights)
+        n_variances = len(self.classifier.variance)
         if n_weights != self.classifier.n_features or n_variances != self.classifier.n_features:
             raise ValueError('Incompatible sizes for weights and variances arrays')
 
@@ -111,11 +107,7 @@ class XCMModel(XCM):
         fitness = self.classifier.predict(hashed_features, exploration)
 
         ctr_estimate = fitness / (fitness + (1. - fitness) / self.downsampling_rate)
-
-        try:
-            ctr_boost = ctr_estimate / self.training_set_ctr
-        except KeyError:
-            ctr_boost = 0
+        ctr_boost = ctr_estimate / self.training_set_ctr
 
         return fitness, ctr_estimate, ctr_boost
 
@@ -144,9 +136,6 @@ class XCMTrainingModel(XCM):
 
         # AUC scores:
         self.auc_scores = {}
-
-    def configure_classifier(self, classifier_data):
-        pass
 
     def load(self, data_store):
         """
