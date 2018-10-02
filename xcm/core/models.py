@@ -158,9 +158,9 @@ class XCMTrainingModel(XCM):
         Return the measured CTR in the unsampled data used to run.
         """
         record_count = self.good_behaviour_count + self.normal_behaviour_count + self.unused_sample_count
-        num = self.good_behaviour_count + 1.
+        num = self.good_behaviour_count
         denom = record_count + self.downsampling_rate
-        return float(num) / denom
+        return float(num) / denom if denom else 0.0
 
     @property
     def downsampling_rate(self):
@@ -170,17 +170,15 @@ class XCMTrainingModel(XCM):
         NOTE: this assumes only the impressions are downsampled. IF this is ever different, then calculation of
         the calibration correction would need to change.
         """
-        if self.normal_behaviour_count + self.unused_sample_count == 0:
-            return 1.
-
-        return float(self.normal_behaviour_count) / float(self.normal_behaviour_count + self.unused_sample_count)
+        denom = self.normal_behaviour_count + self.unused_sample_count
+        return float(self.normal_behaviour_count) / denom if denom else 1.0
 
     @property
     def oversampling_rate(self):
         """Return the measured oversampling rate for good behaviour"""
         inv_downsampling_rate = 1 / self.downsampling_rate
 
-        num = self.good_behaviour_count + 1
+        num = self.good_behaviour_count
         denom = self.good_behaviour_count + self.normal_behaviour_count + inv_downsampling_rate
 
         return float(num) / denom

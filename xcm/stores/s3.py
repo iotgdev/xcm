@@ -98,7 +98,7 @@ class S3XCMStore(XCMStore):
             except (Exception, ):
                 self.logger.info('bad key name in S3 XCM store: ({})'.format(obj.key))
 
-        return sorted(models, key=lambda x: x.split(':')[1], reverse=True)  # sort by version, newest first
+        return sorted(models, key=lambda x: x.split(_ID_DELIMETER)[1], reverse=True)  # sort by version, newest first
 
     def retrieve(self, model_id):
         """

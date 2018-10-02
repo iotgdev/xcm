@@ -98,8 +98,8 @@ class BOPRClassifier(XCMClassifier):
         self.beta = beta
 
         self.initial_variance = variances if is_array(variances) else \
-            numpy.ones(self.n_features) * DEFAULT_INITIAL_VARIANCE
-        self.initial_weights = weights if is_array(weights) else numpy.zeros(self.n_features)
+            numpy.ones(self.n_features, dtype='float64') * DEFAULT_INITIAL_VARIANCE
+        self.initial_weights = weights if is_array(weights) else numpy.zeros(self.n_features, dtype='float64')
 
         self.weights = self.initial_weights.copy()
         self.variance = self.initial_variance.copy()
@@ -117,7 +117,7 @@ class BOPRClassifier(XCMClassifier):
         0 for no reset and 1 for a full reset
         """
         if not (0 <= eps <= 1):
-            raise RuntimeError('Invalid forget quantity, must be between 0 and 1')
+            raise ValueError('Invalid forget quantity, must be between 0 and 1')
 
         noisy_variance = numpy.multiply(self.variance, self.initial_variance) / (
             (1 - eps) * self.initial_variance + eps * self.variance)
@@ -156,7 +156,7 @@ class BOPRClassifier(XCMClassifier):
         :param list[int] labels: the labels corresponding to the samples
         """
         if len(hash_vectors) != len(labels):
-            raise RuntimeError(
+            raise ValueError(
                 'Number of data points %s does not match the number of labels %s' % (len(hash_vectors), len(labels)))
 
         for label, nonzero_indices in izip(labels, hash_vectors):

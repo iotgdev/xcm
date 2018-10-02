@@ -30,7 +30,7 @@ class TestForget(unittest.TestCase):
             self.bopr = BOPRClassifier()
 
     def test_runtime_error(self):
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             self.bopr.forget(1000)
 
     def test_no_runtime_error(self):
@@ -44,7 +44,7 @@ class TestPartialFit(unittest.TestCase):
             self.bopr = BOPRClassifier()
 
     def test_runtime_error(self):
-        with self.assertRaises(RuntimeError):
+        with self.assertRaises(ValueError):
             self.bopr.partial_fit([[1]], [])
 
     def test_no_error(self):
