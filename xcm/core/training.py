@@ -17,22 +17,21 @@ import mmh3
 
 from xcm.canonical.xcm_time import xcmd, xcmd_dt
 
-XCM_BASELINE_NAME = 'XCMBaseline'
 XCM_CURRENT_NAME = 'XCMDefault'
 
 
-def build_xcm_model(model_store, log_reader):
+def build_xcm_model(model_store, log_reader, model_name=XCM_CURRENT_NAME):
     """
     Builds an XCM model
     Uses a baseline model to train up to 6 days ago, then a current model trained until yesterday
     moves the current model to a new store for access/optimisation as an active model
     """
 
-    train_baseline_model(model_store, log_reader)
-    train_current_model(model_store, log_reader)
+    train_baseline_model(model_store, log_reader, model_name)
+    train_current_model(model_store, log_reader, model_name)
 
 
-def train_baseline_model(model_store, log_reader):
+def train_baseline_model(model_store, log_reader, model_name):
     """
     Trains a baseline model
     baseline models:
@@ -41,11 +40,12 @@ def train_baseline_model(model_store, log_reader):
      - Atr trained up to 7 days ago to avoid noise
     :param xcm.stores.s3.S3XCMStore model_store: the datastore to interface with models
     :param xcm.core.base_classes.XCMReader log_reader: the log reader to provide data for.
+    :type model_name: str|unicode
     """
     today = xcmd()
     end_date = today - 7
 
-    model_id = model_store.list(XCM_BASELINE_NAME)[0]
+    model_id = model_store.list(model_name + 'Baseline')[0]
     model = model_store.retrieve(model_id)
     """:type model: xcm.core.models.XCMTrainingModel"""
 
@@ -57,7 +57,7 @@ def train_baseline_model(model_store, log_reader):
     model_store.create(model)  # a new version is saved
 
 
-def train_current_model(model_store, log_reader):
+def train_current_model(model_store, log_reader, model_name):
     """
     Trains a current model
     current models:
@@ -67,14 +67,15 @@ def train_current_model(model_store, log_reader):
      - trained up to yesterday given that the dataset is complete
     :type model_store: xcm.stores.s3.S3XCMStore
     :type log_reader: xcm.core.base_classes.XCMReader
+    :type model_name: str|unicode
     """
     today = xcmd()
     end_date = today - 1
 
-    model_id = model_store.list(XCM_BASELINE_NAME)[0]  # most recent baseline
+    model_id = model_store.list(model_name + 'Baseline')[0]  # most recent baseline
     model = model_store.retrieve(model_id)
     """:type model: xcm.core.models.XCMTrainingModel"""
-    model.name = XCM_CURRENT_NAME
+    model.name = model_name
 
     train(model, log_reader, end_date, auction_filter=lambda x: mmh3.hash(ujson.dumps(x, sort_keys=True)) % 20 == 0)
 
