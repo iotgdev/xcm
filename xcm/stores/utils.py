@@ -13,7 +13,7 @@ _ACTIVE_STORE = None
 _TRAINING_STORE = None
 
 
-def get_active_model_store():
+def get_performance_model_store():
     global _ACTIVE_STORE
     if _ACTIVE_STORE is None:
         _ACTIVE_STORE = S3XCMStore('', '', XCMModel)

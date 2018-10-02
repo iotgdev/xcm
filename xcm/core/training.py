@@ -20,18 +20,18 @@ from xcm.canonical.xcm_time import xcmd, xcmd_dt
 XCM_CURRENT_NAME = 'XCMDefault'
 
 
-def build_xcm_model(model_store, log_reader, model_name=XCM_CURRENT_NAME):
+def build_xcm_model(model_store, log_reader, model_name=XCM_CURRENT_NAME, features=None):
     """
     Builds an XCM model
-    Uses a baseline model to train up to 6 days ago, then a current model trained until yesterday
+    Uses a baseline model to _train up to 6 days ago, then a current model trained until yesterday
     moves the current model to a new store for access/optimisation as an active model
     """
 
-    train_baseline_model(model_store, log_reader, model_name)
-    train_current_model(model_store, log_reader, model_name)
+    _train_baseline_model(model_store, log_reader, model_name, features)
+    _train_model(model_store, log_reader, model_name, features)
 
 
-def train_baseline_model(model_store, log_reader, model_name):
+def _train_baseline_model(model_store, log_reader, model_name, features=None):
     """
     Trains a baseline model
     baseline models:
@@ -40,6 +40,7 @@ def train_baseline_model(model_store, log_reader, model_name):
      - Atr trained up to 7 days ago to avoid noise
     :param xcm.stores.s3.S3XCMStore model_store: the datastore to interface with models
     :param xcm.core.base_classes.XCMReader log_reader: the log reader to provide data for.
+    :param list features: the features to use to build the model
     :type model_name: str|unicode
     """
     today = xcmd()
@@ -48,16 +49,18 @@ def train_baseline_model(model_store, log_reader, model_name):
     model_id = model_store.list(model_name + 'Baseline')[0]
     model = model_store.retrieve(model_id)
     """:type model: xcm.core.models.XCMTrainingModel"""
+    if features:
+        model.features = features
 
     next_training_day = max(model.trained_days) + 1
     for training_day in range(next_training_day, end_date + 1):
         model.classifier.forget(0.001)
 
-    train(model, log_reader, end_date, auction_filter=lambda x: mmh3.hash(ujson.dumps(x, sort_keys=True)) % 20 > 0)
+    _train(model, log_reader, end_date, auction_filter=lambda x: mmh3.hash(ujson.dumps(x, sort_keys=True)) % 20 > 0)
     model_store.create(model)  # a new version is saved
 
 
-def train_current_model(model_store, log_reader, model_name):
+def _train_model(model_store, log_reader, model_name, features=None):
     """
     Trains a current model
     current models:
@@ -68,6 +71,7 @@ def train_current_model(model_store, log_reader, model_name):
     :type model_store: xcm.stores.s3.S3XCMStore
     :type log_reader: xcm.core.base_classes.XCMReader
     :type model_name: str|unicode
+    :type features: list
     """
     today = xcmd()
     end_date = today - 1
@@ -76,21 +80,23 @@ def train_current_model(model_store, log_reader, model_name):
     model = model_store.retrieve(model_id)
     """:type model: xcm.core.models.XCMTrainingModel"""
     model.name = model_name
+    if features:
+        model.features = features
 
-    train(model, log_reader, end_date, auction_filter=lambda x: mmh3.hash(ujson.dumps(x, sort_keys=True)) % 20 == 0)
+    _train(model, log_reader, end_date, auction_filter=lambda x: mmh3.hash(ujson.dumps(x, sort_keys=True)) % 20 == 0)
 
     model_store.update(model)  # same version as the baseline model
 
 
-def train(model, log_reader, end_day, auction_filter=None, downsampling_rate=0.02, pagination=10000):
+def _train(model, log_reader, end_day, auction_filter=None, downsampling_rate=0.02, pagination=10000):
     """
     Train the model
-    :param xcm.core.models.XCMTrainingModel model: an XCM model to train
+    :param xcm.core.models.XCMTrainingModel model: an XCM model to _train
     :param xcm.core.base_classes.XCMReader log_reader: a reader passing labelled data
     :param callable|None auction_filter: a function to restrict the dataset
     :param float downsampling_rate: the decimal fraction of baseline records to process
-    :param int end_day: end day to train (incl)
-    :param int pagination: the amount of records to train in one go
+    :param int end_day: end day to _train (incl)
+    :param int pagination: the amount of records to _train in one go
     """
     training_data = []
     labels = []

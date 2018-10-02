@@ -35,21 +35,20 @@ Two representations are provided:
 1. The `XCMModel` is a high(er) performance model that does not train and can be considered immutable
 2. The `XCMTrainingModel` is a trainable model that can update it's classifier
 
-The `XCMClassifier`s methods are dependent on the implementations of the `XCM.load` and `XCM.serialise` methods.
+The `XCMClassifier`s methods are dependent on the implementations of the `XCM.deserialize` and `XCM.serialize` methods.
 
 #### XCMStore
 The `XCMStore` class is designed to store in perpetuity the XCM model data and any learned techniques. 
 The XCM models are continuous and so all historic learnings compound.
 The XCMStore classes have to be able to implement CRUD features. 
-The implementations and methods of the `XCMStore` classes are impacted by the methods of the `XCM` classes.
 
 An `S3XCMStore` is provided to store XCM models as files on S3. 
-It is possible to store each `XCM` classes models in different stores (prodution vs development).
-Two helper methods have been provided to create each of the different stores (production vs dev):
+It is possible to interact with each provided `XCM` classes (`XCMModel` and `XCMTrainingModel`) in different stores (production vs training).
+Two helper methods have been provided to create each of the "different" stores:
 ```python
->>> from xcm.stores.utils import get_active_model_store, get_training_model_store
+>>> from xcm.stores.utils import get_performance_model_store, get_training_model_store
 >>> training_store = get_training_model_store()
->>> active_store = get_active_model_store()
+>>> performance_store = get_performance_model_store()
 ```
 
 
@@ -67,9 +66,9 @@ XCM training is done in 3 stages:
 A single `xcm.core.training.build_xcm_model` has been provided to encompass this work:
 ```python
 >>> from xcm.core.training import build_xcm_model
->>> from xcm.stores.utils import get_active_model_store, get_training_model_store
+>>> from xcm.stores.utils import get_training_model_store
 >>> from xcm.core.base_classes import XCMReader
->>> build_xcm_model(get_training_model_store(), get_active_model_store(), XCMReader())
+>>> build_xcm_model(get_training_model_store(), XCMReader())
 ```
 The XCM training needn't occur more frequently than once per day.
 
@@ -77,8 +76,8 @@ The XCM training needn't occur more frequently than once per day.
 ## Prediction
 To predict with an XCM model, call the predict method on an XCM class:
 ```python
->>> from xcm.stores.utils import get_active_model_store
->>> xcm_store = get_active_model_store()
+>>> from xcm.stores.utils import get_training_model_store
+>>> xcm_store = get_training_model_store()
 >>> newest_model_id = xcm_store.list()[0]
 >>> model = xcm_store.retrieve(newest_model_id)
 >>> data = {}  # include stuff here from an XCMRecord
