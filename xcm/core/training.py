@@ -11,54 +11,53 @@ Data resources we're going to be working with:
 """
 from __future__ import unicode_literals
 
+import ujson
+
 import mmh3
 
-from xcm.canonical.xcm_time import xcmd
-
+from xcm.canonical.xcm_time import xcmd, xcmd_dt
 
 XCM_BASELINE_NAME = 'XCMBaseline'
-XCM_CURRENT_NAME = 'XCMCurrent'
+XCM_CURRENT_NAME = 'XCMDefault'
 
 
-def build_xcm_model(training_store, active_store, log_reader):
+def build_xcm_model(model_store, log_reader):
     """
     Builds an XCM model
     Uses a baseline model to train up to 6 days ago, then a current model trained until yesterday
     moves the current model to a new store for access/optimisation as an active model
     """
 
-    train_baseline_model(training_store, log_reader)
-    train_current_model(training_store, log_reader)
-
-    generate_active_model(training_store, active_store)
+    train_baseline_model(model_store, log_reader)
+    train_current_model(model_store, log_reader)
 
 
-def train_baseline_model(training_store, log_reader):
+def train_baseline_model(model_store, log_reader):
     """
     Trains a baseline model
     baseline models:
      - Have no auction filter
      - Have been trained for some days prior to "creation"
      - Atr trained up to 7 days ago to avoid noise
-    :param xcm.stores.s3.S3XCMStore training_store: the datastore to interface with models
+    :param xcm.stores.s3.S3XCMStore model_store: the datastore to interface with models
     :param xcm.core.base_classes.XCMReader log_reader: the log reader to provide data for.
     """
     today = xcmd()
     end_date = today - 7
 
-    baseline_id = training_store.list(XCM_BASELINE_NAME)[0]  # most recent baseline
-    baseline_model = training_store.retrieve(baseline_id)
-    """:type baseline_model: xcm.core.models.XCMTrainingModel"""
+    model_id = model_store.list(XCM_BASELINE_NAME)[0]
+    model = model_store.retrieve(model_id)
+    """:type model: xcm.core.models.XCMTrainingModel"""
 
-    next_training_day = max(baseline_model.trained_days) + 1
+    next_training_day = max(model.trained_days) + 1
     for training_day in range(next_training_day, end_date + 1):
-        baseline_model.forget()
+        model.classifier.forget(0.001)
 
-    baseline_model.train(log_reader, end_date)
-    training_store.create(baseline_model)  # a new version is saved
+    train(model, log_reader, end_date, auction_filter=lambda x: mmh3.hash(ujson.dumps(x, sort_keys=True)) % 20 > 0)
+    model_store.create(model)  # a new version is saved
 
 
-def train_current_model(training_store, log_reader):
+def train_current_model(model_store, log_reader):
     """
     Trains a current model
     current models:
@@ -66,34 +65,49 @@ def train_current_model(training_store, log_reader):
      - are built from baseline models
      - create active models
      - trained up to yesterday given that the dataset is complete
-    :type training_store: xcm.stores.s3.S3XCMStore
-    :type log_reader:
+    :type model_store: xcm.stores.s3.S3XCMStore
+    :type log_reader: xcm.core.base_classes.XCMReader
     """
     today = xcmd()
     end_date = today - 1
 
-    baseline_id = training_store.list(XCM_BASELINE_NAME)[0]  # most recent baseline
-    current_model = training_store.retrieve(baseline_id)
-    """:type current_model: xcm.core.models.XCMTrainingModel"""
-    current_model.name = XCM_CURRENT_NAME
+    model_id = model_store.list(XCM_BASELINE_NAME)[0]  # most recent baseline
+    model = model_store.retrieve(model_id)
+    """:type model: xcm.core.models.XCMTrainingModel"""
+    model.name = XCM_CURRENT_NAME
 
-    record_filter = lambda x: mmh3.hash(x['AuctionId']) % 20 > 0
-    current_model.train(log_reader, end_date, auction_filter=record_filter)
+    train(model, log_reader, end_date, auction_filter=lambda x: mmh3.hash(ujson.dumps(x, sort_keys=True)) % 20 == 0)
 
-    training_store.update(current_model)  # same version as the baseline model
+    model_store.update(model)  # same version as the baseline model
 
 
-def generate_active_model(training_store, active_store):
+def train(model, log_reader, end_day, auction_filter=None, downsampling_rate=0.02, pagination=10000):
     """
-    generates an active model (optimised to evaluate, not train)
-    :param training_store:
-    :param xcm.stores.s3.S3XCMStore active_store:
+    Train the model
+    :param xcm.core.models.XCMTrainingModel model: an XCM model to train
+    :param xcm.core.base_classes.XCMReader log_reader: a reader passing labelled data
+    :param callable|None auction_filter: a function to restrict the dataset
+    :param float downsampling_rate: the decimal fraction of baseline records to process
+    :param int end_day: end day to train (incl)
+    :param int pagination: the amount of records to train in one go
     """
-    old_active_model = active_store.list(XCM_CURRENT_NAME)[0]  # most recent active model
+    training_data = []
+    labels = []
 
-    current_id = training_store.list(XCM_CURRENT_NAME)[0]  # most recent current model
-    current_model = training_store.retrieve(current_id)
-    active_model = current_model.create_prediction_model(XCM_CURRENT_NAME, current_model.version)
+    for xcm_date in range(max(model.trained_days) + 1, end_day + 1):
+        for record_index, (label, record) in enumerate(
+                log_reader.get_labelled_data(xcmd_dt(xcm_date), downsampling_rate), start=1):
 
-    active_store.update(active_model)
-    active_store.delete(old_active_model)
+            if auction_filter and auction_filter(record):
+                labels.append(label)
+                training_data.append(record)
+
+                if not record_index % pagination:
+                    model.partial_fit(training_data, labels)
+                    training_data = []
+                    labels = []
+
+        model.trained_days.append(xcm_date)
+
+    if training_data:
+        model.partial_fit(training_data, labels)

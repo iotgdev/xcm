@@ -12,15 +12,11 @@ import mmh3
 import numpy
 from six import iteritems
 
-from xcm.core.records import XCMRecord
 
 logger = logging.getLogger('xcm.features')
 
 
-DEFAULT_FEATURES = ['CoarseURL', 'AppId', 'AnonymousDomainId', 'IsAdInApp', 'IsInStreamVideo', 'IsInterstitial',
-                    'DeviceType', 'SlotVisibility', 'SlotViewability', 'HalfHourIndex', 'WeekDay', 'GeoState',
-                    'GeoCity', 'Browser', 'BrowserVersion', 'OS', 'OSVersion', 'AdHandle', 'AdHeight', 'AdWidth',
-                    'AdvertiserId', 'PageVerticalCategories', 'SmoothTime', 'AdDimensions']
+_VERSION_DELIMITER = '-'
 
 
 def get_next_version(version=None):
@@ -34,18 +30,17 @@ def get_next_version(version=None):
     today = datetime.date.today()
 
     try:
-        ver_parts = [int(part) for part in version.split('_')]
+        ver_parts = [int(part) for part in version.split(_VERSION_DELIMITER)]
     except AttributeError:
         logging.warning('error when creating new version from {}'.format(version))
-        ver_parts = [0, 0, 0]
+        ver_parts = [0, 0, 0, 0]
 
     if ver_parts[0:3] == [today.year, today.month, today.day]:
         ver_parts[3] += 1
-        ver_parts[4] = 0
     else:
-        ver_parts = [today.year, today.month, today.day, 0, 0]
+        ver_parts = [today.year, today.month, today.day, 0]
 
-    return "{0:04}_{1:02}_{2:02}_{3:02}_{4:02}".format(*ver_parts)
+    return "{0:04} {1:02} {2:02} {3:02}".format(*ver_parts).replace(' ', _VERSION_DELIMITER)
 
 
 def get_hashed_features(record, hash_size):
@@ -77,5 +72,5 @@ def get_xcm_feature_hashes(canon_auction, hash_size, features):
     :return: a list of hashed features
     :rtype: numpy.array
     """
-    xcm_record = XCMRecord.as_dict(canon_auction, features)
-    return numpy.unique(numpy.array(get_hashed_features(xcm_record, hash_size)))
+    filtered_auction = {k: v for k, v in canon_auction.items() if k in features}
+    return numpy.unique(numpy.array(get_hashed_features(filtered_auction, hash_size)))
