@@ -12,24 +12,13 @@ import logging
 from abc import ABCMeta, abstractmethod
 from six import with_metaclass
 
+from xcm.core.features import get_xcm_feature_hashes
 
 logger = logging.getLogger('xcm.base_classes')
 
 
 class XCMReader(with_metaclass(ABCMeta, object)):
     """All XCM readers must have these methods"""
-
-    @abstractmethod
-    def get_ml_features_dict(self, source_date, **kwargs):
-        """
-        Method to get a dict of machine learning fields from a data source
-        returns a dict capable of making an XCMRecord and an AdDataRecord
-        """
-        pass
-
-    @abstractmethod
-    def get_label(self, record, **kwargs):
-        pass
 
     @abstractmethod
     def get_labelled_data(self, source_date, **kwargs):
@@ -66,30 +55,39 @@ class XCM(with_metaclass(ABCMeta, object)):
             logger.exception('Model could not be saved {}'.format(dir(self)))
             raise AttributeError('This Model does not have an id assigned to it yet!')
 
-        return ':'.join((name, self.xcm_class, version))
-
-    @property
-    def xcm_class(self):
-        return self.__class__.__name__
+        return ':'.join((name, version))
 
     @abstractmethod
-    def load(self, datastore):
+    def deserialize(self, **kwargs):
         """Loads a model from a datastore into a model class"""
         pass
 
     @abstractmethod
-    def serialise(self, datastore):
+    def serialize(self):
         """Serialises a model from a datastore into a model class"""
         pass
 
-    # noinspection PyMethodMayBeStatic
-    def forget(self):
-        """method for "blurring" data in the model"""
-        pass  # not all models need to forget (Active models, for example)
+    # noinspection PyTypeChecker, PyUnresolvedReferences
+    def predict(self, feature_dict, exploration=0.):
+        """
+        Given an auction, make predictions about the likely response.
 
-    @abstractmethod
-    def predict(self, feature_dict, exploration=0.0):
-        pass
+        :param dict feature_dict: a bidder auction dictionary
+        :param float exploration: perturbation factor between 0 and 1
+        :rtype: tuple[float, float, float]
+        :return: uncalibrated model score, calibrated CTR prediction, CTR boost over the training CTR
+        """
+        if not self.training_set_ctr or not self.downsampling_rate:
+            raise ValueError("Cannot perform prediction: missing defining attribute")
+
+        hashed_features = get_xcm_feature_hashes(feature_dict, self.classifier.n_features, self.features)
+
+        fitness = self.classifier.predict(hashed_features, exploration)
+
+        ctr_estimate = fitness / (fitness + (1. - fitness) / self.downsampling_rate)
+        ctr_boost = ctr_estimate / self.training_set_ctr
+
+        return fitness, ctr_estimate, ctr_boost
 
 
 class XCMStore(with_metaclass(ABCMeta, object)):
