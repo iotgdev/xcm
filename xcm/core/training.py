@@ -85,7 +85,7 @@ def _train_model(model_store, log_reader, model_name, features=None):
 
     _train(model, log_reader, end_date, auction_filter=lambda x: mmh3.hash(ujson.dumps(x, sort_keys=True)) % 20 == 0)
 
-    model_store.update(model)  # same version as the baseline model
+    model_store.create(model)  # same version as the baseline model
 
 
 def _train(model, log_reader, end_day, auction_filter=None, downsampling_rate=0.02, pagination=10000):
