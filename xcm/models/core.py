@@ -45,6 +45,22 @@ class XCMModel(object):
         self.updated_at = updated_at
 
     @property
+    def pre_train_variance(self):
+        return self.classifier.initial_variance
+
+    @property
+    def pre_train_mean(self):
+        return self.classifier.initial_weights
+
+    @property
+    def post_train_variance(self):
+        return self.classifier.variance
+
+    @property
+    def post_train_mean(self):
+        return self.classifier.weights
+
+    @property
     def training_set_ctr(self):
         """
         Return the measured CTR in the unsampled data used to run.

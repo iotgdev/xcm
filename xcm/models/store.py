@@ -91,7 +91,7 @@ class XCMStore(object):
         :type model: XCMModel
         :rtype: dict
         """
-        response = {k: getattr(model, v, getattr(model.classifier, v, None)) for k, v in self.model_fields}
+        response = {k: getattr(model, v, None) for k, v in self.model_fields}
         self._format_response_bytes(response)
         return response
 
