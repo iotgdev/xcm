@@ -24,7 +24,7 @@ logger = logging.getLogger('xcm.models.core')
 
 class XCMModel(object):
 
-    def __init__(self, name, account, model_id=None, beta=5, pre_train_mean=None, post_train_mean=None,
+    def __init__(self, name, account, model_id=None, classifier_beta=5, pre_train_mean=None, post_train_mean=None,
                  pre_train_variance=None, post_train_variance=None, hash_size=1000000, good_records=0, normal_records=0,
                  sample_records=0, features=None, created_at=None, updated_at=None):
         self.name = name
@@ -32,7 +32,7 @@ class XCMModel(object):
         self.account = account
 
         self.classifier = BOPRClassifier(
-            pre_train_mean, pre_train_variance, post_train_mean, post_train_variance, beta, hash_size)
+            pre_train_mean, pre_train_variance, post_train_mean, post_train_variance, classifier_beta, hash_size)
         self.hash_size = hash_size
 
         self.good_records = good_records
@@ -43,6 +43,10 @@ class XCMModel(object):
 
         self.created_at = created_at
         self.updated_at = updated_at
+
+    @property
+    def classifier_beta(self):
+        return self.classifier.beta
 
     @property
     def pre_train_variance(self):
