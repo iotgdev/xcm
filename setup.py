@@ -23,7 +23,7 @@ setup(
     # available in PKG-INFO
     name='xcm',
     version=about['__version__'],
-    description='Cross Customer Model machine learning for Realtime Bidding',
+    description='Cross Campaign Model machine learning for Realtime Bidding',
     url='https://github.com/iotgdev/xcm/',
     author='iotec',
     author_email='dev@dsp.io',
@@ -51,10 +51,8 @@ setup(
         'future>=0.16.0',
         'six>=1.11.0',
         'mmh3>=2.3.1',
-        'ujson>=1.35',
         'numpy>=1.15.0',
-        'boto3>=1.4.4',
-        'pytz>=2014.2',
-        's3fs>=0.1.5',
+        'ioteclabs-wrapper',
+        'retrying',
     ]
 )

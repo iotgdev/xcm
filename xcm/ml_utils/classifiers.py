@@ -15,8 +15,7 @@ from math import sqrt, exp, erf
 
 import numpy
 
-from xcm.core.base_classes import XCMClassifier
-from xcm.utilities.sampler import Sampler
+from xcm.ml_utils.samplers import Sampler
 
 DEFAULT_HASH_SIZE = 1000000
 DEFAULT_INITIAL_VARIANCE = 5
@@ -77,7 +76,7 @@ def weighting(x):
         return vx * (vx + x)
 
 
-class BOPRClassifier(XCMClassifier):
+class BOPRClassifier(object):
     """
     A bayesian online probit regression implementation as seen on
 
@@ -86,23 +85,28 @@ class BOPRClassifier(XCMClassifier):
     Advertising in Microsoft's Bing Search Engine"
     """
 
-    def __init__(self, weights=None, variances=None, beta=0.1):
+    def __init__(self, initial_weights=None, initial_variance=None, weights=None, variances=None, beta=5,
+                 n_features=DEFAULT_HASH_SIZE):
         """
         Initialise the BOPR fields.
-
+        :type: initial_weights: numpy.array
+        :type: initial_variance: numpy.array
         :type weights: numpy.array
         :type variances: numpy.array
+        :type n_features: int
         :type beta: float
         """
-        self.n_features = weights.shape[0] if is_array(weights) else DEFAULT_HASH_SIZE
         self.beta = beta
 
-        self.initial_variance = variances if is_array(variances) else \
-            numpy.ones(self.n_features, dtype='float64') * DEFAULT_INITIAL_VARIANCE
-        self.initial_weights = weights if is_array(weights) else numpy.zeros(self.n_features, dtype='float64')
+        self.initial_variance = initial_variance if is_array(initial_variance) else \
+            numpy.ones(n_features, dtype='float64') * DEFAULT_INITIAL_VARIANCE
+        self.initial_weights = initial_weights if is_array(initial_weights) else \
+            numpy.zeros(n_features, dtype='float64')
 
-        self.weights = self.initial_weights.copy()
-        self.variance = self.initial_variance.copy()
+        self.weights = weights if is_array(weights) else \
+            numpy.zeros(n_features, dtype='float64')
+        self.variance = variances if is_array(variances) else \
+            numpy.ones(n_features, dtype='float64') * DEFAULT_INITIAL_VARIANCE
 
         self.sampler = Sampler(10000, 10000)
 

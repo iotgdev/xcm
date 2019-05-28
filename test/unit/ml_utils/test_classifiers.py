@@ -2,7 +2,7 @@ import unittest
 import mock
 
 
-from xcm.classifiers.bopr import gaus_probit_ratio, weighting, BOPRClassifier
+from xcm.ml_utils.classifiers import gaus_probit_ratio, weighting, BOPRClassifier
 
 
 class TestGausProbitRatio(unittest.TestCase):
@@ -26,7 +26,7 @@ class TestWeighting(unittest.TestCase):
 class TestForget(unittest.TestCase):
 
     def setUp(self):
-        with mock.patch('xcm.classifiers.bopr.DEFAULT_HASH_SIZE', new=1):
+        with mock.patch('xcm.ml_utils.classifiers.DEFAULT_HASH_SIZE', new=1):
             self.bopr = BOPRClassifier()
 
     def test_runtime_error(self):
@@ -40,7 +40,7 @@ class TestForget(unittest.TestCase):
 class TestPartialFit(unittest.TestCase):
 
     def setUp(self):
-        with mock.patch('xcm.classifiers.bopr.DEFAULT_HASH_SIZE', new=1):
+        with mock.patch('xcm.ml_utils.classifiers.DEFAULT_HASH_SIZE', new=1):
             self.bopr = BOPRClassifier()
 
     def test_runtime_error(self):
