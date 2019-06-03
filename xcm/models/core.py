@@ -124,7 +124,7 @@ class XCMModel(object):
             elif value:
                 indices.append(mmh3.hash("%s-%s" % (key, value)))
 
-        return numpy.array(indices) % self.hash_size
+        return numpy.array(indices, dtype='int32') % self.hash_size
 
     def partial_fit(self, data, labels):
         """
