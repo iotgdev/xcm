@@ -148,7 +148,7 @@ class BOPRClassifier(object):
         nonzero_weights_sum = numpy.take(self.weights, hash_vector).sum()
 
         if exploration > 0:
-            nonzero_weights_sum += self.sampler.get() * std_deviation * min(exploration, 1.0)
+            nonzero_weights_sum += next(self.sampler.get()) * std_deviation * min(exploration, 1.0)
 
         return probit(nonzero_weights_sum / std_deviation)
 

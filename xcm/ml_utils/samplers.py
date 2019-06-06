@@ -14,19 +14,18 @@ class Sampler(object):
 
         self.random_sample = None
 
+        self.index = 0
+        self.used = 0
+
     def get(self):
-        index = 0
-        used = 0
+        if self.random_sample is None or self.used == self.sample_usages:
+            self.random_sample = numpy.random.randn(self.sample_size)
+            self.used = 0
 
-        while True:
-            if self.random_sample is None or used == self.sample_usages:
-                self.random_sample = numpy.random.randn(self.sample_size)
-                used = 0
+        sample = self.random_sample[self.index]
+        self.index += 1
+        if self.index == self.sample_size:
+            self.index = 0
+            self.used += 1
 
-            sample = self.random_sample[index]
-            index += 1
-            if index == self.sample_size:
-                index = 0
-                used += 1
-
-            yield sample
+        return sample
