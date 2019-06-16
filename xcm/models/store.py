@@ -34,21 +34,21 @@ class XCMStore(object):
         'id': 'model_id',
         'account': 'account',
         'name': 'name',
-        'classifierBeta': 'classifier_beta',
-        'hashSize': 'hash_size',
-        'goodRecords': 'good_records',
-        'normalRecords': 'normal_records',
-        'sampleRecords': 'sample_records',
+        'classifier_beta': 'classifier_beta',
+        'hash_size': 'hash_size',
+        'good_records': 'good_records',
+        'normal_records': 'normal_records',
+        'sample_records': 'sample_records',
         'features': 'features',
-        'createdAt': 'created_at',
-        'updatedAt': 'updated_at',
+        'created_at': 'created_at',
+        'updated_at': 'updated_at',
     }
 
     _byte_fields = {
-        'preTrainMean': 'pre_train_mean',
-        'postTrainMean': 'post_train_mean',
-        'preTrainVariance': 'pre_train_variance',
-        'postTrainVariance': 'post_train_variance'
+        'pre_train_mean': 'pre_train_mean',
+        'post_train_mean': 'post_train_mean',
+        'pre_train_variance': 'pre_train_variance',
+        'post_train_variance': 'post_train_variance'
     }
 
     def __init__(self):
@@ -83,7 +83,7 @@ class XCMStore(object):
     def _to_model(self, response):
         """converts an api response to a model object"""
         self._format_model_bytes(response)
-        return XCMModel(**{v: response.get(k, response.get(self.snake_case(k))) for k, v in self.model_fields})
+        return XCMModel(**{v: response.get(k) for k, v in self.model_fields})
 
     def _format_model_bytes(self, response):
         """
@@ -110,7 +110,7 @@ class XCMStore(object):
         formats the byte fields in a response
         :type response: dict
         """
-        hash_size = response['hashSize']
+        hash_size = response['hash_size']
         for i in self._byte_fields:
             response[i] = struct.pack('<%sf' % hash_size, *response[i].ravel())
             if isinstance(response[i], str):  # python 2 to 3
