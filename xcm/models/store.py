@@ -6,7 +6,6 @@ classes for storing xcm models
 from __future__ import unicode_literals
 
 import logging
-import re
 import struct
 from builtins import bytes
 
@@ -68,17 +67,6 @@ class XCMStore(object):
         :rtype: dict
         """
         return {'complete': True, 'verbose': True}
-
-    @staticmethod
-    def snake_case(string):
-        """
-        Converts string from camelCase to snake_case
-        Legacy API responded with camelCase, current API responds with snake_case
-        :type string: str
-        :rtype: str
-        """
-        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', string)
-        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
     def _to_model(self, response):
         """converts an api response to a model object"""
