@@ -70,9 +70,8 @@ class XCMModel(object):
         Return the measured CTR in the unsampled data used to run.
         """
         record_count = self.good_records + self.normal_records + self.sample_records
-        num = self.good_records
-        denom = record_count + self.downsampling_rate
-        return (float(num) / denom) if denom else 0.0
+        denom = record_count + (1 / self.downsampling_rate)
+        return ((float(self.good_records) / denom) if denom else 0.0) or 1.0
 
     @property
     def downsampling_rate(self):
@@ -82,8 +81,8 @@ class XCMModel(object):
         NOTE: this assumes only the impressions are downsampled. IF this is ever different, then calculation of
         the calibration correction would need to change.
         """
-        denom = self.good_records + self.sample_records
-        return (float(self.normal_records) / denom) if denom else 0.0
+        denom = self.normal_records + self.sample_records
+        return (float(self.normal_records) / denom) if denom else 1.0
 
     @property
     def oversampling_rate(self):
@@ -93,10 +92,8 @@ class XCMModel(object):
         except ZeroDivisionError:
             return 1
 
-        num = self.good_records
         denom = self.good_records + self.normal_records + inv_downsampling_rate
-
-        return float(num) / denom
+        return (float(self.good_records) / denom) or 1.0
 
     def get_xcm_feature_hashes(self, canon_auction):
         """
@@ -147,6 +144,14 @@ class XCMModel(object):
         self.good_records += valid_labels.count(1)
         self.normal_records += valid_labels.count(0)
         self.sample_records += labels.count(None)
+
+        """
+        All of this code is code is legacy, 
+        we don't know why it's here or what 
+        it does or even the math behind it.
+        It does work though.
+        Here be dragons.
+        """
 
         logger.info('Oversampling clicks by %s', int(0.1 / self.oversampling_rate))
         for i in range(len(valid_labels)):
