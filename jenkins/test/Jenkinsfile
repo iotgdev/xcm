@@ -60,7 +60,7 @@ pipeline {
 
                     script {
                         try {
-                            sh(". ${WORKSPACE}/.venv/bin/activate && python setup.py test -a '--junitxml=test.xml'")
+                            sh(". ${WORKSPACE}/.venv/bin/activate && ${WORKSPACE}/.venv/bin/python setup.py test -a '--junitxml=test.xml'")
                         } catch(ex) {
                             junit("test.xml")
                             throw ex
@@ -82,7 +82,7 @@ pipeline {
 
                     script {
                         try {
-                            sh(". ${WORKSPACE}/.venv/bin/activate && python setup.py test -a '--junitxml=test.xml'")
+                            sh(". ${WORKSPACE}/.venv/bin/activate && ${WORKSPACE}/.venv/bin/python setup.py test -a '--junitxml=test.xml'")
                         } catch(ex) {
                             junit("test.xml")
                             throw ex
