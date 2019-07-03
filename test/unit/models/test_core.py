@@ -12,10 +12,10 @@ class TestXCMModel(unittest.TestCase):
         self.default_model = XCMModel('default', None)
 
     def test_default_training_set_ctr(self):
-        self.assertEqual(self.default_model.training_set_ctr, 0.0)
+        self.assertEqual(self.default_model.training_set_ctr, 1.0)
 
     def test_default_downsampling_rate(self):
-        self.assertEqual(self.default_model.downsampling_rate, 0.0)
+        self.assertEqual(self.default_model.downsampling_rate, 1.0)
 
     def test_default_oversampling_rate(self):
         self.assertEqual(self.default_model.oversampling_rate, 1.0)
