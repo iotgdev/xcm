@@ -51,7 +51,7 @@ setup(
         'future>=0.16.0',
         'six>=1.11.0',
         'mmh3>=2.3.1',
-        'numpy>=1.15.0',
+        'numpy<1.17.0',
         'ioteclabs-wrapper',
         'retrying',
     ]
